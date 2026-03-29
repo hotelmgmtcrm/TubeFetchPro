@@ -8,4 +8,4 @@ build/
 *.log
 *.sqlite
 temp/
-server/bin/
+# server/bin/
