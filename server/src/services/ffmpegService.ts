@@ -7,10 +7,12 @@ const getFfmpegPath = () => {
     return process.env.FFMPEG_PATH;
   }
   // Check project local bin
-  const localBin = path.join(__dirname, '../../bin/ffmpeg.exe');
-  if (fs.existsSync(localBin)) {
-    return localBin;
-  }
+  const isWin = process.platform === 'win32';
+  const binName = isWin ? 'ffmpeg.exe' : 'ffmpeg';
+  const localBin = path.join(__dirname, '../../bin', binName);
+  
+  if (fs.existsSync(localBin)) return localBin;
+  
   return 'ffmpeg';
 };
 

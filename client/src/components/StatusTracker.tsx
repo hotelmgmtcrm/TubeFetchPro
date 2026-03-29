@@ -1,53 +1,66 @@
 'use client';
 import React from 'react';
 
-type Status = 'pending' | 'processing' | 'completed' | 'failed';
+type Status = 'pending' | 'validating' | 'processing' | 'converting' | 'uploading' | 'completed' | 'failed';
 
 interface StatusTrackerProps {
   status: Status;
   error?: string;
   downloadUrl?: string;
+  onDelete?: () => void;
 }
 
-export default function StatusTracker({ status, error, downloadUrl }: StatusTrackerProps) {
-  const statusColors = {
-    pending: 'bg-yellow-500',
-    processing: 'bg-blue-500',
-    completed: 'bg-green-500',
-    failed: 'bg-red-500',
+const STEPS = ['Queued', 'Downloading', 'Converting', 'Uploading', 'Done'];
+
+function getStepIndex(status: Status): number {
+  const map: Record<string, number> = {
+    pending: 0, validating: 0, processing: 1, converting: 2, uploading: 3, completed: 4,
   };
+  return map[status] ?? -1;
+}
+
+export default function StatusTracker({ status, error, downloadUrl, onDelete }: StatusTrackerProps) {
+  const step = getStepIndex(status);
+  const failed = status === 'failed';
+  const done = status === 'completed';
 
   return (
-    <div className="flex flex-col gap-2 p-4 border rounded-lg bg-card shadow-sm transition-all hover:shadow-md">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Status</span>
-        <span className={`px-2 py-1 rounded-full text-xs font-bold text-white ${statusColors[status]}`}>
-          {status}
-        </span>
-      </div>
-      
-      {status === 'processing' && (
-        <div className="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700 mt-2">
-           <div className="bg-blue-600 h-1.5 rounded-full animate-pulse" style={{ width: '100%' }}></div>
+    <div>
+      {!failed && (
+        <div className="flex gap-[3px] mb-2">
+          {STEPS.map((label, i) => (
+            <div key={label} className="flex-1">
+              <div className={`h-[3px] rounded-full ${
+                i <= step ? 'bg-green-500' : 'bg-[#222]'
+              } ${i === step && !done ? 'animate-pulse' : ''}`} />
+              <p className={`text-[9px] mt-1 ${i <= step ? 'text-[#888]' : 'text-[#333]'}`}>{label}</p>
+            </div>
+          ))}
         </div>
       )}
 
-      {status === 'completed' && downloadUrl && (
-        <a 
-          href={downloadUrl} 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          className="mt-2 block text-center py-2 bg-accent text-white rounded-md font-medium hover:bg-blue-600 transition shadow-sm"
-        >
-          Download Result
-        </a>
-      )}
-
-      {status === 'failed' && error && (
-        <p className="text-xs text-red-500 mt-1 italic">
-          Error: {error}
-        </p>
-      )}
+      <div className="flex items-center gap-2">
+        {done && downloadUrl ? (
+          <a
+            href={downloadUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block px-4 py-1.5 bg-green-500 text-black text-xs font-medium rounded hover:bg-green-400 transition-colors"
+          >
+            Download
+          </a>
+        ) : failed ? (
+          <span className="text-xs text-red-400">{error || 'Failed'}</span>
+        ) : (
+          <span className="text-xs text-[#555]">{status}...</span>
+        )}
+        <div className="flex-1" />
+        {onDelete && (
+          <button onClick={onDelete} className="text-[#333] hover:text-red-400 transition-colors" title="Remove">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        )}
+      </div>
     </div>
   );
 }

@@ -10,10 +10,12 @@ const getBinaryPath = () => {
     return process.env.YT_DLP_PATH;
   }
   // Check project local bin
-  const localBin = path.join(__dirname, '../../bin/yt-dlp.exe');
-  if (fs.existsSync(localBin)) {
-    return `"${localBin}"`;
-  }
+  const isWin = process.platform === 'win32';
+  const binName = isWin ? 'yt-dlp.exe' : 'yt-dlp';
+  const localBin = path.join(__dirname, '../../bin', binName);
+  
+  if (fs.existsSync(localBin)) return `"${localBin}"`;
+  
   return 'yt-dlp';
 };
 
@@ -32,17 +34,17 @@ export const resolveInputType = (inputUrl: string) => {
 
 export const fetchVideoMetadata = async (videoUrl: string) => {
   try {
-    const command = `${YT_DLP} --print "%(id)s,%(title)s,%(thumbnail)s,%(duration)s,%(uploader)s" --no-warnings "${videoUrl}"`;
+    const command = `${YT_DLP} --print "%(id)s||%(title)s||%(thumbnail)s||%(duration)s||%(uploader)s" --no-warnings "${videoUrl}"`;
     console.log(`[EXEC] ${command}`);
     const { stdout } = await execPromise(command);
-    const [videoId, title, thumbnail, duration, channelName] = stdout.trim().split(',');
+    const [videoId, title, thumbnail, duration, channelName] = stdout.trim().split('||');
     
     return {
       videoId,
       title,
       thumbnail,
       duration: parseInt(duration) || 0,
-      channelName,
+      channelName: channelName || 'Unknown Channel',
     };
   } catch (error: any) {
     console.error(`[ERROR] yt-dlp metadata fetch failed: ${error.message}`);

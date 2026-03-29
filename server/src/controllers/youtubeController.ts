@@ -64,6 +64,7 @@ export const fetchChannelVideos = async (req: Request, res: Response) => {
 
     res.json(updatedCache);
   } catch (error: any) {
+    console.error(`\x1b[31m[BACKEND ERROR] fetchChannelVideos for ${req.body.channelUrl} failed: ${error.message}\x1b[0m`);
     res.status(500).json({ error: error.message });
   }
 };

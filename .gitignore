@@ -4,8 +4,10 @@ build/
 .next/
 .env
 .env.local
+.env.copy
+".env copy"
 .DS_Store
 *.log
 *.sqlite
 temp/
-# server/bin/
+server/bin/

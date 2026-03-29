@@ -16,10 +16,12 @@ const getBinaryPath = () => {
     return process.env.YT_DLP_PATH;
   }
   // Check project local bin
-  const localBin = path.join(__dirname, '../../bin/yt-dlp.exe');
-  if (fs.existsSync(localBin)) {
-    return `"${localBin}"`;
-  }
+  const isWin = process.platform === 'win32';
+  const binName = isWin ? 'yt-dlp.exe' : 'yt-dlp';
+  const localBin = path.join(__dirname, '../../bin', binName);
+  
+  if (fs.existsSync(localBin)) return `"${localBin}"`;
+  
   return 'yt-dlp';
 };
 

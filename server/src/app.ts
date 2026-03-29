@@ -2,15 +2,24 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import dotenv from 'dotenv';
-import authRoutes from './routes/authRoutes';
+import rateLimit from 'express-rate-limit';
 import youtubeRoutes from './routes/youtubeRoutes';
 import jobRoutes from './routes/jobRoutes';
-import adminRoutes from './routes/adminRoutes';
-
-dotenv.config();
 
 const app = express();
+
+app.use(morgan('dev'));
+
+// Rate Limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests from this IP, please try again after 15 minutes' }
+});
+
+app.use('/api/', limiter);
 
 // Health check - before ALL middleware
 app.get(['/health', '/api/health'], (req, res) => {
@@ -18,16 +27,23 @@ app.get(['/health', '/api/health'], (req, res) => {
 });
 
 // Middlewares
-app.use(helmet());
-app.use(cors());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['*'];
+
+app.use(cors({
+  origin: allowedOrigins.includes('*') ? '*' : allowedOrigins,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
-app.use(morgan('dev'));
 
 // Routes
-app.use('/api/auth', authRoutes);
 app.use('/api/youtube', youtubeRoutes);
 app.use('/api/jobs', jobRoutes);
-app.use('/api/admin', adminRoutes);
 
 // Error Handling Middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
