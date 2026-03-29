@@ -13,7 +13,7 @@ dotenv.config();
 const app = express();
 
 // Health check - before ALL middleware
-app.get('/health', (req, res) => {
+app.get(['/health', '/api/health'], (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 

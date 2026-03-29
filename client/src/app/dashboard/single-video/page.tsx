@@ -22,15 +22,12 @@ export default function SingleVideoPage() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
       const response = await axios.post('http://localhost:5000/api/jobs/create', {
         sourceUrl: url,
         outputType,
         quality: 'high',
         customFilename,
         consentAccepted: true,
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
       setJob(response.data);
       setUrl('');

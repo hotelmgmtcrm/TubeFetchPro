@@ -23,11 +23,8 @@ export default function ChannelFetchPage() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
       const response = await axios.post('http://localhost:5000/api/youtube/channel-videos', {
         channelUrl: url,
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
       setChannelData(response.data);
       setSelectedIds([]); // Reset selection
@@ -60,7 +57,6 @@ export default function ChannelFetchPage() {
     setSuccess('');
 
     try {
-      const token = localStorage.getItem('token');
       const selectedVideos = channelData.fetchedVideos
         .filter((v: any) => selectedIds.includes(v.videoId))
         .map((v: any) => ({
@@ -75,8 +71,6 @@ export default function ChannelFetchPage() {
         items: selectedVideos,
         outputType: 'mp4',
         consentAccepted: true
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
 
       setSuccess(`Successfully initiated ${selectedIds.length} jobs! Check progress in History.`);

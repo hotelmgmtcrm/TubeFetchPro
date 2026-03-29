@@ -14,7 +14,7 @@ export interface IVideoJob extends Document {
   quality: string;
   customFilename?: string;
   status: 'pending' | 'validating' | 'processing' | 'converting' | 'uploading' | 'completed' | 'failed';
-  cloudUrl?: string;
+  downloadUrl?: string;
   cloudPublicId?: string;
   fileSize?: number;
   errorMessage?: string;
@@ -25,7 +25,7 @@ export interface IVideoJob extends Document {
 
 const VideoJobSchema: Schema = new Schema(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
     inputType: { type: String, enum: ['single_video', 'channel_video'], required: true },
     sourceUrl: { type: String, required: true },
     channelUrl: { type: String },
@@ -42,7 +42,7 @@ const VideoJobSchema: Schema = new Schema(
       enum: ['pending', 'validating', 'processing', 'converting', 'uploading', 'completed', 'failed'],
       default: 'pending',
     },
-    cloudUrl: { type: String },
+    downloadUrl: { type: String },
     cloudPublicId: { type: String },
     fileSize: { type: Number },
     errorMessage: { type: String },

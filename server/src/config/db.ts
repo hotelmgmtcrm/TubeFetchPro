@@ -5,14 +5,28 @@ dotenv.config();
 
 const connectDB = async () => {
   try {
-    const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/tubefetchpro';
+    const mongoUri = process.env.MONGO_URI;
     
-    console.log(`Connecting to MongoDB...`);
-    const conn = await mongoose.connect(mongoUri);
-    console.log(`\x1b[32m[SUCCESS] MongoDB Connected: ${conn.connection.host}\x1b[0m`);
+    if (mongoUri && !process.env.USE_MOCK_DB) {
+      console.log(`Connecting to MongoDB Atlas...`);
+      // Add a timeout for connection to avoid hanging
+      await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
+      console.log(`[SUCCESS] Connected to MongoDB Atlas`);
+    } else {
+      throw new Error('Atlas URI missing or USE_MOCK_DB enabled');
+    }
   } catch (error: any) {
-    console.error(`\x1b[31m[ERROR] MongoDB Connection Failed: ${error.message}\x1b[0m`);
-    process.exit(1);
+    console.warn(`[WARN] Atlas connection failed (${error.message}). Falling back to In-Memory DB...`);
+    try {
+      const { MongoMemoryServer } = await import('mongodb-memory-server');
+      const mongoServer = await MongoMemoryServer.create();
+      const uri = mongoServer.getUri();
+      await mongoose.connect(uri);
+      console.log(`[SUCCESS] In-Memory MongoDB Started at ${uri}`);
+    } catch (memError: any) {
+      console.error(`[ERROR] All DB connections failed: ${memError.message}`);
+      process.exit(1);
+    }
   }
 };
 

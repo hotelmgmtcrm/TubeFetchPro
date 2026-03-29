@@ -12,7 +12,7 @@ export interface IUsageConsent extends Document {
 
 const UsageConsentSchema: Schema = new Schema(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
     sourceUrl: { type: String, required: true },
     accepted: { type: Boolean, required: true },
     acceptedAt: { type: Date, default: Date.now },

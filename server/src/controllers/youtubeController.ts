@@ -30,14 +30,19 @@ export const fetchMetadata = async (req: Request, res: Response) => {
 
 export const fetchChannelVideos = async (req: Request, res: Response) => {
   try {
-    const { channelUrl } = req.body;
+    let { channelUrl } = req.body;
     if (!channelUrl) return res.status(400).json({ error: 'channelUrl is required' });
+
+    // Handle @username shorthand
+    if (channelUrl.startsWith('@')) {
+      channelUrl = `https://www.youtube.com/${channelUrl}`;
+    }
 
     // 1. Check ChannelCache first
     const cache = await ChannelCache.findOne({ channelUrl });
     if (cache) {
-      // Return cached results if less than 24 hours old
-      const isFresh = (new Date().getTime() - new Date(cache.lastFetchedAt).getTime()) < 24 * 60 * 60 * 1000;
+      // Return cached results if less than 1 hour old (freq update for dev)
+      const isFresh = (new Date().getTime() - new Date(cache.lastFetchedAt).getTime()) < 1 * 60 * 60 * 1000;
       if (isFresh) {
         return res.json(cache);
       }
@@ -50,7 +55,7 @@ export const fetchChannelVideos = async (req: Request, res: Response) => {
     const updatedCache = await ChannelCache.findOneAndUpdate(
       { channelUrl },
       { 
-        channelName: channelUrl.split('/').pop() || 'YouTube Channel',
+        channelName: rawData.channelName || channelUrl.split('/').pop() || 'YouTube Channel',
         fetchedVideos: rawData.fetchedVideos,
         lastFetchedAt: new Date(),
       },

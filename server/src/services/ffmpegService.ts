@@ -2,6 +2,20 @@ import ffmpeg from 'fluent-ffmpeg';
 import fs from 'fs';
 import path from 'path';
 
+const getFfmpegPath = () => {
+  if (process.env.FFMPEG_PATH && process.env.FFMPEG_PATH !== 'ffmpeg') {
+    return process.env.FFMPEG_PATH;
+  }
+  // Check project local bin
+  const localBin = path.join(__dirname, '../../bin/ffmpeg.exe');
+  if (fs.existsSync(localBin)) {
+    return localBin;
+  }
+  return 'ffmpeg';
+};
+
+ffmpeg.setFfmpegPath(getFfmpegPath());
+
 export const convertToMp3 = async (inputPath: string, outputPath: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     ffmpeg(inputPath)

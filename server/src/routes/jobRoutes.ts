@@ -4,10 +4,10 @@ import { protect } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
-router.post('/create', protect, createJob);
-router.post('/batch', protect, createBatchJobs);
-router.get('/history', protect, getHistory);
-router.get('/:id', protect, getJob);
-router.delete('/:id', protect, deleteJob);
+router.post('/create', createJob);
+router.post('/batch', createBatchJobs);
+router.get('/history', getHistory);
+router.get('/:id', getJob);
+router.delete('/:id', deleteJob);
 
 export default router;

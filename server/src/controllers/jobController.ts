@@ -8,7 +8,7 @@ import mongoose from 'mongoose';
 export const createJob = async (req: Request, res: Response) => {
   try {
     const { sourceUrl, outputType, quality, consentAccepted, customFilename } = req.body;
-    const userId = (req as any).user.id;
+    const userId = (req as any).user?.id;
 
     if (!consentAccepted) {
       return res.status(403).json({ error: 'You must provide consent representing legal authority to process this content.' });
@@ -49,7 +49,7 @@ export const createJob = async (req: Request, res: Response) => {
 export const createBatchJobs = async (req: Request, res: Response) => {
   try {
     const { items, outputType, quality, consentAccepted } = req.body;
-    const userId = (req as any).user.id;
+    const userId = (req as any).user?.id;
 
     if (!consentAccepted) {
       return res.status(403).json({ error: 'Consent is required for batch processing.' });
@@ -96,8 +96,14 @@ export const createBatchJobs = async (req: Request, res: Response) => {
 
 export const getHistory = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
-    const jobs = await VideoJob.find({ userId }).sort({ createdAt: -1 });
+    const userId = (req as any).user?.id;
+    let query = {};
+    if (userId) {
+      query = { userId };
+    }
+    // If guest, we just show all recent broad history (limited for privacy)
+    // or we could show only guest jobs? Let's show all latest for now.
+    const jobs = await VideoJob.find(query).limit(50).sort({ createdAt: -1 });
     res.json(jobs);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
